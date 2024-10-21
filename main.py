@@ -1,16 +1,14 @@
-# This is a sample Python script.
+a = input()
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+unique = set()
 
+rep = set()
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+for char in a:
+    if char in unique:
+        rep.add(char)
+        unique.discard(char)
+    elif char not in rep:
+        unique.add(char)
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/ просто тестирую всякое
+print(''.join(sorted(unique)))
