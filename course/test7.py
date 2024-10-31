@@ -4,15 +4,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_squared_error, r2_score
 
-# Загрузка данных (замените 'data.csv' на путь к вашим данным)
-df = pd.read_csv('LST_final_TRUE.csv')  # если данные находятся в CSV файле
-# Замените это на ваш способ загрузки данных
-# Пример:
-# df = pd.DataFrame(...) # создайте DataFrame из ваших данных
-
-# Предположим, что ваши данные загружены в DataFrame df
-# Разделите данные на признаки (X) и целевую переменную (y)
-X = df.drop('Temperature_merra_1000hpa', axis=1)  # Убедитесь, что 'Temperature_merra_1000hpa' - это ваша целевая переменная
+df = pd.read_csv('LST_final_TRUE.csv')
+X = df.drop('Temperature_merra_1000hpa', axis=1)
 y = df['Temperature_merra_1000hpa']
 
 # Определение модели
@@ -27,7 +20,6 @@ param_distributions = {
     'max_features': ['sqrt', 'log2'],
 }
 
-# Инициализация RandomizedSearchCV
 search = RandomizedSearchCV(model, param_distributions, n_iter=100, cv=5, n_jobs=-1, random_state=42)
 
 # Обучение модели
@@ -40,12 +32,10 @@ y_pred = search.predict(X)
 mse = mean_squared_error(y, y_pred)
 r2 = r2_score(y, y_pred)
 
-# Вывод результатов
 print("Лучшие параметры:", search.best_params_)
 print("Mean Squared Error:", mse)
 print("R^2 Score:", r2)
 
-# Дополнительно: вывод важности признаков
 feature_importances = search.best_estimator_.feature_importances_
 features = X.columns
 importance_df = pd.DataFrame({'Feature': features, 'Importance': feature_importances})
