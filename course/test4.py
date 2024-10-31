@@ -1,30 +1,28 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+import numpy as np
 
 
-# 1 loading and checking
 def load_and_inspect_data(file_path):
     dataset = pd.read_csv(file_path)
-    print("данные:")
+    print("Информация о данных:")
     print(dataset.info())
-    print("первые строки данных:")
+    print("Первые строки данных:")
     print(dataset.head())
     return dataset
 
 
-# 2 emty spaces
 def handle_missing_values(dataset):
-    print("\nпроверка наличия пропусков:")
+    print("\nПроверка наличия пропусков:")
     print(dataset.isnull().sum())
     dataset.fillna(dataset.median(), inplace=True)
     return dataset
 
 
-# 3
 def scale_features(dataset):
     features = dataset.drop(columns=['T_rp5'])
     scaler = StandardScaler()
@@ -33,39 +31,31 @@ def scale_features(dataset):
     return features_scaled, target
 
 
-# 4
 def split_data(features, target):
     return train_test_split(features, target, test_size=0.2, random_state=42)
 
 
-# 5 подбор гиперпараметров и обучение
 def train_model_with_hyperparameter_tuning(X_train, y_train):
     rf = RandomForestRegressor(random_state=42)
 
-    '''
-    param_grid = {
-        'n_estimators': [50, 100, 150],
-        'max_depth': [10, 20, None],
-        'min_samples_split': [2, 5, 10]
-    }
-    '''
-
-    param_grid = {
-        'n_estimators': [50, 100],
-        'max_depth': [10, None],
-        'min_samples_split': [2, 5]
+    param_distributions = {
+        'n_estimators': [50, 100, 150, 200],
+        'max_depth': [5, 10, 20, None],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
+        'max_features': ['auto', 'sqrt', 'log2']
     }
 
-    grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=5, n_jobs=-1, scoring='r2')
-    grid_search.fit(X_train, y_train)
+    random_search = RandomizedSearchCV(estimator=rf, param_distributions=param_distributions,
+                                       n_iter=100, cv=10, n_jobs=-1, scoring='r2', random_state=42)
+    random_search.fit(X_train, y_train)
 
-    print(f"\nЛучшие параметры: {grid_search.best_params_}")
-    print(f"Лучшее значение R^2 на обучении: {grid_search.best_score_}")
+    print(f"\nЛучшие параметры: {random_search.best_params_}")
+    print(f"Лучшее значение R^2 на обучении: {random_search.best_score_}")
 
-    return grid_search.best_estimator_
+    return random_search.best_estimator_
 
 
-# 6 final test
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
     mse = mean_squared_error(y_test, y_pred)
@@ -75,13 +65,24 @@ def evaluate_model(model, X_test, y_test):
     return y_test, y_pred
 
 
-# 7 visual
 def plot_results(y_test, y_pred):
     plt.figure(figsize=(10, 6))
     plt.plot(y_test.values, label='Настоящие значения')
     plt.plot(y_pred, label='Предсказанные значения', alpha=0.7)
     plt.legend()
     plt.title('Сравнение реальных и предсказанных значений температуры')
+    plt.show()
+
+
+def plot_feature_importance(model, features):
+    importances = model.feature_importances_
+    indices = np.argsort(importances)[::-1]
+
+    plt.figure(figsize=(12, 6))
+    plt.title('Важность признаков')
+    plt.bar(range(features.shape[1]), importances[indices], align='center')
+    plt.xticks(range(features.shape[1]), [features.columns[i] for i in indices], rotation=90)
+    plt.xlim([-1, features.shape[1]])
     plt.show()
 
 
@@ -94,7 +95,19 @@ def main():
     model = train_model_with_hyperparameter_tuning(X_train, y_train)
     y_test, y_pred = evaluate_model(model, X_test, y_test)
     plot_results(y_test, y_pred)
+    plot_feature_importance(model, dataset.drop(columns=['T_rp5']))
 
 
 if __name__ == "__main__":
     main()
+
+'''
+куча ошибок с несовпадением данныех
+...
+
+Лучшие параметры: {'n_estimators': 200, 'min_samples_split': 2, 'min_samples_leaf': 1, 'max_features': 'log2', 'max_depth': None}
+Лучшее значение R^2 на обучении: 0.8358743562346447
+
+Mean Squared Error: 6.179558664422637
+R^2 Score: 0.8361188966537809
+'''
