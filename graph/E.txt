@@ -1,0 +1,7 @@
+Directed
+Yes
+S A 8
+A B 10
+B C 5
+C A 2
+B T 7

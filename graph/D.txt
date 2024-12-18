@@ -1,0 +1,11 @@
+Directed
+Yes
+S A 10
+S B 5
+A C 7
+B C 3
+C T 6
+F C 3
+A T 7
+B T 3
+S C 3
