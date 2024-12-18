@@ -1,79 +1,108 @@
 import csv
-import argparse
+import os
+
+import chardet
 
 
-def read_file(file_name):
-    """Чтение CSV-файла"""
+# Функция для чтения параметров из консоли
+def parse_input():
+    params = {}
+    items = []
     try:
-        with open(file_name, encoding='utf-8') as file:
-            reader = csv.reader(file)
-            data = [row for row in reader]
-            return data
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Файл {file_name} не найден.")
-    except Exception as e:
-        raise Exception(f"Ошибка при чтении файла {file_name}: {e}")
+        while True:
+            line = input("Введите параметры (пустая строка для завершения): ").strip()
+            if not line:
+                break
+            if '=' in line:
+                key, value = line.split('=', 1)
+                params[key.strip()] = value.strip()
+            else:
+                items.extend(
+                    item.strip() for item in line.replace(";", ",").split(",")
+                )
+    except EOFError:
+        pass
 
+    params.setdefault("file", "input.csv")
+    params["items"] = items
+    return params
 
-def parse_parameters():
-    """Парсинг параметров из ввода"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--file', '-f', default='input.csv', help='Имя CSV-файла')
-    parser.add_argument('--number', '-n', type=int, required=True, help='Число ящиков')
-    parser.add_argument('--rows', type=int, required=True, help='Число непустых рядов')
-    parser.add_argument('--cols', type=int, required=True, help='Число непустых колонок')
-    parser.add_argument('--pigeons', '-m', type=int, required=True, help='Число предметов')
-    parser.add_argument('--items', help='Предметы через запятую или точку с запятой')
-    args = parser.parse_args()
+# Функция для чтения CSV-файла
+def parse_csv(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Файл {file_path} не найден.")
 
-    return args
+    # Определение кодировки
+    with open(file_path, 'rb') as f:
+        encoding = chardet.detect(f.read())['encoding']
 
+    with open(file_path, 'r', encoding=encoding) as csv_file:
+        reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+        data = [row for row in reader if any(cell.strip() for cell in row)]
 
-def validate_data(data, rows, cols):
-    """Проверка данных из CSV"""
-    actual_rows = sum(1 for row in data if any(cell.strip() for cell in row))
-    actual_cols = max((len(row) for row in data), default=0)
+    if not data:
+        raise ValueError(f"Файл {file_path} пустой.")
 
+    return data
+
+# Функция для проверки данных из CSV и параметров
+def check_data(params, csv_data):
     errors = []
+    try:
+        n = int(params.get("n", 0))
+        m = int(params.get("m", 0))
+        rows = int(params.get("rows", 0))
+        cols = int(params.get("cols", 0))
+    except ValueError:
+        raise ValueError("Параметры n, m, rows и cols должны быть целыми числами.")
+
+    actual_rows = len(csv_data)
+    actual_cols = max(len(row) for row in csv_data)
+
     if actual_rows != rows:
-        errors.append(f"Указано {rows} непустых рядов, но найдено {actual_rows}.")
+        errors.append(f"Количество строк в файле ({actual_rows}) не совпадает с rows={rows}.")
     if actual_cols != cols:
-        errors.append(f"Указано {cols} непустых колонок, но найдено {actual_cols}.")
+        errors.append(f"Количество столбцов в файле ({actual_cols}) не совпадает с cols={cols}.")
+    if rows * cols != n:
+        errors.append(f"Общее количество ящиков (rows * cols) ({rows * cols}) не совпадает с n={n}.")
+
+    csv_items = [
+        item.strip() for row in csv_data for cell in row if cell for item in cell.split(",")
+    ]
+    if len(csv_items) != m:
+        errors.append(f"Количество предметов в файле ({len(csv_items)}) не совпадает с m={m}.")
+
+    input_items = [item.strip() for item in params.get("items", [])]
+    missing_items = set(input_items) - set(csv_items)
+    if missing_items:
+        errors.append(f"Предметы, отсутствующие в файле: {', '.join(missing_items)}.")
 
     return errors
 
-
-def formulate_principle(boxes, items):
-    """Формулировка принципа Дирихле"""
-    if items > boxes:
-        min_items = (items + boxes - 1) // boxes
-        return f"Если в {boxes} ящиках лежит {items} предметов, то хотя бы в одном ящике лежит не менее {min_items} предметов."
-    elif boxes > items:
-        empty_boxes = boxes - items
-        return f"Если в {boxes} ящиках лежит {items} предметов, то пустых ящиков как минимум {empty_boxes}."
+# Функция для формулировки принципа Дирихле
+def dirichle(n, m):
+    if m > n:
+        return f"Если в {n} ящиках лежит {m} предметов, то хотя бы в одном ящике лежит не менее {m // n + 1} предметов."
+    elif m < n:
+        return f"Если в {n} ящиках лежит {m} предметов, то пустых ящиков как минимум {n - m}."
     else:
-        return f"Если в {boxes} ящиках лежит {items} предметов, то в каждом ящике лежит ровно один предмет."
+        return "Все предметы могут быть распределены равномерно."
 
+# Основная программа
+params = parse_input()
+file_path = params["file"]
 
-def main():
-    args = parse_parameters()
+try:
+    csv_data = parse_csv(file_path)
+    errors = check_data(params, csv_data)
 
-    try:
-        data = read_file(args.file)
-
-        errors = validate_data(data, args.rows, args.cols)
-        if errors:
-            print("Ошибки в данных:")
-            for error in errors:
-                print(f"- {error}")
-            return
-
-        principle = formulate_principle(args.number, args.pigeons)
-        print(principle)
-
-    except Exception as e:
-        print(f"Ошибка: {e}")
-
-
-if __name__ == '__main__':
-    main()
+    if errors:
+        print("Ошибки:")
+        for error in errors:
+            print("-", error)
+    else:
+        n = int(params["n"])
+        m = int(params["m"])
+        print(dirichle(n, m))
+except Exception as e:
+    print(f"Ошибка: {e}")

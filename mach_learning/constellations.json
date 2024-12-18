@@ -1,0 +1,35 @@
+{
+  "constellations": [
+    {
+      "latin_name": "Orion",
+      "abbreviation": "Ori",
+      "area": 594.0,
+      "brightest_stars": [
+        {"name": "Betelgeuse", "brightness": -0.5},
+        {"name": "Rigel", "brightness": 0.12},
+        {"name": "Bellatrix", "brightness": 1.64}
+      ],
+      "neighboring_constellations": ["Taurus", "Gemini", "Canis Major"]
+    },
+    {
+      "latin_name": "Taurus",
+      "abbreviation": "Tau",
+      "area": 797.0,
+      "brightest_stars": [
+        {"name": "Aldebaran", "brightness": 0.87},
+        {"name": "Elnath", "brightness": 1.65}
+      ],
+      "neighboring_constellations": ["Aries", "Orion", "Gemini"]
+    },
+    {
+      "latin_name": "Gemini",
+      "abbreviation": "Gem",
+      "area": 514.0,
+      "brightest_stars": [
+        {"name": "Castor", "brightness": 1.58},
+        {"name": "Pollux", "brightness": 1.14}
+      ],
+      "neighboring_constellations": ["Orion", "Taurus", "Cancer"]
+    }
+  ]
+}
