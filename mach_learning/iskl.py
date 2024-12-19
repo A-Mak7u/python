@@ -1,10 +1,7 @@
 import csv
 import os
-
 import chardet
 
-
-# Функция для чтения параметров из консоли
 def parse_input():
     params = {}
     items = []
@@ -23,16 +20,15 @@ def parse_input():
     except EOFError:
         pass
 
-    params.setdefault("file", "input.csv")
+    params.setdefault("file", "input.csv")  # Путь к загруженному файлу
     params["items"] = items
     return params
 
-# Функция для чтения CSV-файла
 def parse_csv(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Файл {file_path} не найден.")
 
-    # Определение кодировки
+    # кодировк
     with open(file_path, 'rb') as f:
         encoding = chardet.detect(f.read())['encoding']
 
@@ -45,7 +41,7 @@ def parse_csv(file_path):
 
     return data
 
-# Функция для проверки данных из CSV и параметров
+# проверка данных из CSV и параметров
 def check_data(params, csv_data):
     errors = []
     try:
@@ -79,7 +75,6 @@ def check_data(params, csv_data):
 
     return errors
 
-# Функция для формулировки принципа Дирихле
 def dirichle(n, m):
     if m > n:
         return f"Если в {n} ящиках лежит {m} предметов, то хотя бы в одном ящике лежит не менее {m // n + 1} предметов."
@@ -88,7 +83,6 @@ def dirichle(n, m):
     else:
         return "Все предметы могут быть распределены равномерно."
 
-# Основная программа
 params = parse_input()
 file_path = params["file"]
 
