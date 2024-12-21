@@ -52,6 +52,7 @@ def check_data(params, csv_data):
     except ValueError:
         raise ValueError("Параметры n, m, rows и cols должны быть целыми числами.")
 
+
     actual_rows = len(csv_data)
     actual_cols = max(len(row) for row in csv_data)
 

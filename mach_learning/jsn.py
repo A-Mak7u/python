@@ -1,14 +1,11 @@
 import json
 import csv
 
-# Загрузка данных из JSON-файла
 with open('constellations.json', 'r') as json_file:
     data = json.load(json_file)
 
-# Список для хранения данных о звездах
 stars = []
 
-# Заполнение списка stars данными из JSON
 for constellation in data['constellations']:
     for star in constellation['brightest_stars']:
         star_info = {
