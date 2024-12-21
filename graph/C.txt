@@ -1,0 +1,7 @@
+Directed
+Yes
+S A 100
+A B 1
+B T 1
+S C 50
+C T 50

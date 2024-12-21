@@ -1,0 +1,8 @@
+Directed
+Yes
+S A 10
+S B 5
+A B 15
+A T 10
+B T 10
+18

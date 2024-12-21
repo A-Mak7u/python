@@ -1,0 +1,8 @@
+star_name,brightness,constellation_name,constellation_abbreviation,constellation_area,constellation_neighbors
+Betelgeuse,-0.5,Orion,Ori,594.0,"Taurus, Gemini, Canis Major"
+Rigel,0.12,Orion,Ori,594.0,"Taurus, Gemini, Canis Major"
+Bellatrix,1.64,Orion,Ori,594.0,"Taurus, Gemini, Canis Major"
+Aldebaran,0.87,Taurus,Tau,797.0,"Aries, Orion, Gemini"
+Elnath,1.65,Taurus,Tau,797.0,"Aries, Orion, Gemini"
+Castor,1.58,Gemini,Gem,514.0,"Orion, Taurus, Cancer"
+Pollux,1.14,Gemini,Gem,514.0,"Orion, Taurus, Cancer"
