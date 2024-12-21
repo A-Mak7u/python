@@ -18,10 +18,8 @@ for constellation in data['constellations']:
         }
         stars.append(star_info)
 
-# Определяем названия столбцов
 fields = ['star_name', 'brightness', 'constellation_name', 'constellation_abbreviation', 'constellation_area', 'constellation_neighbors']
 
-# Запись данных в CSV-файл
 with open('stars.csv', 'w', newline='') as out_file:
     writer = csv.DictWriter(out_file, fieldnames=fields)
     writer.writeheader()

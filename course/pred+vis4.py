@@ -20,23 +20,22 @@ def load_data(file_path):
 
 
 # 2
-def preprocess_data(data, method):
-    features = data.drop(columns=['T_rp5'])
-    target = data['T_rp5']
-
+def preprocess_data(X_train, X_test, method):
     if method == "None":
-        return features, target
+        return X_train, X_test
     elif method == "StandardScaler":
         scaler = StandardScaler()
-        features = scaler.fit_transform(features)
+        X_train = scaler.fit_transform(X_train)
+        X_test = scaler.transform(X_test)
     elif method == "MinMaxScaler":
         scaler = MinMaxScaler()
-        features = scaler.fit_transform(features)
+        X_train = scaler.fit_transform(X_train)
+        X_test = scaler.transform(X_test)
     elif method == "PolynomialFeatures":
         poly = PolynomialFeatures(degree=2, include_bias=False)
-        features = poly.fit_transform(features)
-
-    return features, target
+        X_train = poly.fit_transform(X_train)
+        X_test = poly.transform(X_test)
+    return X_train, X_test
 
 
 # 3
@@ -52,25 +51,31 @@ def main():
     file_path = 'LST_final_TRUE.csv'
     data = load_data(file_path)
 
+    X = data.drop(columns=['T_rp5'])
+    y = data['T_rp5']
+
     preprocessing_methods = ["None", "StandardScaler", "MinMaxScaler", "PolynomialFeatures"]
     models = {
         "Linear Regression": LinearRegression(),
         "Random Forest": RandomForestRegressor(n_estimators=100, max_depth=None, min_samples_split=2, random_state=42),
-        "Gradient Boosting": GradientBoostingRegressor(),
+        "Gradient Boosting": GradientBoostingRegressor(random_state=42),
         "K-Neighbors Regressor": KNeighborsRegressor(),
-        "Decision Tree": DecisionTreeRegressor(),
+        "Decision Tree": DecisionTreeRegressor(random_state=42),
         "Support Vector Regressor": SVR()
     }
 
     results = []
 
+    # обучающая и тестовая
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
     for preproc in preprocessing_methods:
-        X, y = preprocess_data(data, preproc)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X_train_proc, X_test_proc = preprocess_data(X_train, X_test, preproc)
 
         for model_name, model in models.items():
-            model.fit(X_train, y_train)
-            mse, r2 = evaluate_model(model, X_test, y_test)
+            model.fit(X_train_proc, y_train)
+
+            mse, r2 = evaluate_model(model, X_test_proc, y_test)
             results.append({
                 "Preprocessing": preproc,
                 "Model": model_name,
